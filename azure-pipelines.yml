@@ -6,32 +6,63 @@
 trigger:
 - master
 
-pool:
-  vmImage: 'windows-latest'
+stages:
+  stage: Build_Stage
+  jobs:
+    job: Build
+      pool:
+        vmImage: 'windows-latest'
 
-variables:
-  solution: '**/*.sln'
-  buildPlatform: 'Any CPU'
-  buildConfiguration: 'Release'
+      variables:
+        solution: '**/*.sln'
+        buildPlatform: 'Any CPU'
+        buildConfiguration: 'Release'
 
-steps:
-- task: NuGetToolInstaller@1
+      steps:
+      - task: NuGetToolInstaller@1
 
-- task: NuGetCommand@2
-  inputs:
-    command: 'restore'
-    restoreSolution: '$(solution)'
-    feedsToUse: 'select'
-    vstsFeed: 'e01c3036-cb79-486d-af4e-b5167750b7aa/0b4ffa95-9503-461e-a69e-a3c0b2fe58fc'
+      - task: NuGetCommand@2
+        inputs:
+          command: 'restore'
+          restoreSolution: '$(solution)'
+          feedsToUse: 'select'
+          vstsFeed: 'e01c3036-cb79-486d-af4e-b5167750b7aa/0b4ffa95-9503-461e-a69e-a3c0b2fe58fc'
 
-- task: VSBuild@1
-  inputs:
-    solution: '$(solution)'
-    msbuildArgs: '/p:DeployOnBuild=true /p:WebPublishMethod=Package /p:PackageAsSingleFile=true /p:SkipInvalidConfigurations=true /p:PackageLocation="$(build.artifactStagingDirectory)"'
-    platform: '$(buildPlatform)'
-    configuration: '$(buildConfiguration)'
+      - task: VSBuild@1
+        inputs:
+          solution: '$(solution)'
+          msbuildArgs: '/p:DeployOnBuild=true /p:WebPublishMethod=Package /p:PackageAsSingleFile=true /p:SkipInvalidConfigurations=true /p:PackageLocation="$(build.artifactStagingDirectory)"'
+          platform: '$(buildPlatform)'
+          configuration: '$(buildConfiguration)'
 
-- task: VSTest@2
-  inputs:
-    platform: '$(buildPlatform)'
-    configuration: '$(buildConfiguration)'
+      - task: VSTest@2
+        inputs:
+          platform: '$(buildPlatform)'
+          configuration: '$(buildConfiguration)'
+      
+      - task: PublishBuildArtifacts@1
+        inputs:
+          PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+          ArtifactName: 'drop'
+
+  stage: deploy
+   jobs: 
+  - deployment: Deploy 
+    pool: 
+      vmImage: 'windows-latest'
+    environment: Parts Unlimited QA
+    strategy:
+      runOnce:
+        deploy:        
+          steps:
+          - download: current
+            artifact: drop
+          - task: AzureRmWebAppDeployment@4
+            inputs:
+              ConnectionType: 'AzureRM'
+              azureSubscription: 'Internal Stephan Hueper(fb3e8170-2a0a-43b9-bca4-eef7974e7589)'
+              appType: 'webApp'
+              WebAppName: 'pul-sthuper-qa'
+              packageForLinux:  '$(Pipeline.Workspace)/drop' 
+              enableCustomDeployment: true
+              DeploymentType: 'webDeploy'
