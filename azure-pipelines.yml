@@ -64,6 +64,9 @@ stages:
               azureSubscription: 'Internal Subscription'
               appType: 'webApp'
               WebAppName: 'pul-sthuper-qa'
+              deployToSlotOrASE: true
+              ResourceGroupName: 'pul-sthuper-qa'
+              SlotName: 'Testing'
               packageForLinux: '$(Pipeline.Workspace)/drop'
               enableCustomDeployment: true
               DeploymentType: 'webDeploy'
