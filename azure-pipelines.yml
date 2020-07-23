@@ -27,7 +27,7 @@ stages:
         command: 'restore'
         restoreSolution: '$(solution)'
         feedsToUse: 'select'
-        vstsFeed: 'a2159d9c-ccb9-4a76-a0d0-334c219dff57/2b1b8fd6-4cde-4f5b-a584-032d020ce93c'
+        vstsFeed: 'e01c3036-cb79-486d-af4e-b5167750b7aa/0b4ffa95-9503-461e-a69e-a3c0b2fe58fc'
 
     - task: VSBuild@1
       inputs:
