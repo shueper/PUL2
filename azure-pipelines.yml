@@ -67,6 +67,6 @@ stages:
               deployToSlotOrASE: true
               ResourceGroupName: 'pul-sthuper-qa'
               SlotName: 'Testing'
-              packageForLinux: '$(Pipeline.Workspace)/drop'
+              packageForLinux: '$(Pipeline.Workspace)/drop/*.zip'
               enableCustomDeployment: true
               DeploymentType: 'webDeploy'
